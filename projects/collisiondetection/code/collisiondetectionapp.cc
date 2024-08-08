@@ -9,11 +9,6 @@
 #include "core/cvar.h"
 #include "gtc/random.hpp"
 
-
-//TODO
-//AABB SWEEP
-//EPA
-
 namespace Game {
 
 	CollisionDetectionApp::CollisionDetectionApp() {
@@ -110,31 +105,12 @@ namespace Game {
 		if (gameObject1->graphN->textR == nullptr) {
 			gameObject1->graphN->textR = new TextureResource(TextureResource());
 		}
-		//gameObject1->graphN->textR->LoadTexture("../resources/textures/default.png", true);
 		gameObject1->graphN->textR->LoadTexture("../resources/textures/OHNO.png", true);
 		gameObject1->graphN->textR->BindTexture(gameObject1->graphN->textR->texture);
 
 		TextureResource textR = TextureResource();
-		textR.LoadTexture("../resources/textures/WATER.png", true);
-		//textR.LoadTexture("../resources/textures/STRIPES.png", true);
+		textR.LoadTexture("../resources/textures/STRIPES.png", true);
 		textR.BindTexture(textR.texture);
-
-		PhysicsObject* gameObject2 = new PhysicsObject();
-		gameObject2->graphN = new GraphicsNode();
-		gameObject2->physN = new PhysicsNode();
-		gameObject2->graphN->parent = gameObject2;
-		gameObject2->physN->parent = gameObject2;
-
-
-		gameObject2->graphN->shadR = gameObject1->graphN->shadR;
-		gameObject2->graphN->position = { 3,3,-1 };
-		gameObject2->graphN->scaling = 1.f;
-		gameObject2->graphN->LoadGLTF("../resources/gltf/cylinder.gltf");
-		gameObject2->physN->SetMass(1.f);
-		gameObject2->physN->SetInertiaTensor(e_cylinder);
-		gameObject2->physN->angularVelocity = glm::vec3(.1f);
-
-		physWorld->physObjs.push_back(gameObject2);
 
 		bool testObjects = true;
 		if (testObjects) {
@@ -223,23 +199,6 @@ namespace Game {
 			}
 		}
 
-
-		//PhysicsObject* gameObject3 = new PhysicsObject();
-		//gameObject3->graphN = new GraphicsNode();
-		//gameObject3->physN = new PhysicsNode();
-		//gameObject3->graphN->parent = gameObject3;
-		//gameObject3->physN->parent = gameObject3;
-
-
-		//gameObject3->graphN->shadR = gameObject1->graphN->shadR;
-		//gameObject3->graphN->position = {0,-10, 0};
-		//gameObject3->graphN->scaling = 1.f;
-		//gameObject3->graphN->LoadGLTF("../resources/gltf/ground.gltf");
-		//gameObject3->physN->SetMass(0.f);
-		//gameObject3->physN->SetInertiaTensor(e_cuboid);
-		//physWorld->physObjs.push_back(gameObject3);
-		//picker->ignoreObjects.push_back(gameObject3);
-
 		BlinnPhongMaterial bpMaterial = BlinnPhongMaterial(gameObject1->graphN->shadR->shaderProgram);
 		bpMaterial.shininess = 10.0f;
 		bpMaterial.ambient = { 0.1f, 0.1f, 0.1f, 1.0f };
@@ -268,9 +227,6 @@ namespace Game {
 		picker->highlightMaterial = highlightPointer;
 
 
-		/*
-		float horCounter = 0;
-		float verCounter = 0;*/
 		glm::vec3 lookPoint = glm::vec3(0, 0, 0);
 
 
@@ -283,18 +239,6 @@ namespace Game {
 		glm::vec3 intersection = glm::vec3(0, 0, 0);
 		float intersectionBoxScale = 0.5;
 		float invIntersectionBoxScale = 1 / 0.5;
-
-
-		////this works
-		//glm::vec3* testVector = new glm::vec3(1);
-		//glm::vec3* deepCopy = new glm::vec3(*testVector);
-		//deepCopy->x = 2;
-
-		////This also works;
-		//std::shared_ptr<glm::vec3> testVec = std::make_shared<glm::vec3>(glm::vec3(1));
-		//std::shared_ptr<glm::vec3> testVecDeep = std::make_shared<glm::vec3>(*testVec);
-		//testVecDeep->x = 2;
-
 
 
 		uint worldCounter = 0;
@@ -321,12 +265,6 @@ namespace Game {
 						dirLight.ApplyLight(physWorld->physObjs[i]->graphN->shadR->shaderProgram);
 					}
 
-					//Debug::DrawDebugText("0", glm::vec3(0, 0, 0), glm::vec4(1, 0, 0, 1));
-					//Debug::DrawLine(glm::vec3(1,1,1), glm::vec3(0, 0, 0), 1.0f, glm::vec4(1, 0, 0, 1), glm::vec4(0, 0, 1, 1), Debug::RenderMode::AlwaysOnTop);
-					//Debug::DrawBox(glm::vec3(-1, -1, -1), glm::quat(1,0,0,0), 1.f, glm::vec4(1, 0, 0, 1), Debug::RenderMode::WireFrame, 1.f);
-
-
-
 					Ray ray;
 					if (mouse->pressed[Input::Mouse::Button::LeftButton]) {
 						ray = picker->ShootRay(appWindow, cam);
@@ -351,9 +289,6 @@ namespace Game {
 							physWorld->forceApplier->ApplyForce(collidedObject, intersectionPoint, ray.direction * forceSize);
 						}
 					}
-
-					//Debug::DrawDebugText("INTERSECT", intersection, glm::vec4(1, 0, 0, 1));
-					//Debug::DrawBox(intersection * invIntersectionBoxScale, glm::quat(1, 0, 0, 0), intersectionBoxScale, glm::vec4(1, 0, 0, 1), Debug::RenderMode::AlwaysOnTop, 1.f);
 
 					int drawAxes = Core::CVarReadInt(Core::CVarGet("r_draw_axes"));
 					if (drawAxes) {
@@ -387,7 +322,6 @@ namespace Game {
 			}
 			else { //DISPLAY LAST FRAME
 				worldStates[worldFrame - 1]->Tick((float)deltaTime, *this->cam);
-				//physWorld = worldStates[worldFrame - 1];
 
 				for (int i = 0; i < worldStates[worldFrame - 1]->physObjs.size(); i++) {
 					dirLight.ApplyLight(worldStates[worldFrame - 1]->physObjs[i]->graphN->shadR->shaderProgram);
@@ -443,12 +377,10 @@ namespace Game {
 
 				//Forward back movement
 				if (kbd->held[Input::Key::Code::W]) {
-					/*verCounter += tickMovement;*/
 					cam->position += glm::vec3(fwd.x, fwd.y, fwd.z) * tickMovement;
 					lookPoint += glm::vec3(fwd.x, fwd.y, fwd.z) * tickMovement;
 				}
 				if (kbd->held[Input::Key::Code::S]) {
-					//verCounter -= tickMovement;
 					cam->position -= glm::vec3(fwd.x, fwd.y, fwd.z) * tickMovement;
 					lookPoint -= glm::vec3(fwd.x, fwd.y, fwd.z) * tickMovement;
 
@@ -456,54 +388,42 @@ namespace Game {
 
 				//Right left movement
 				if (kbd->held[Input::Key::Code::D]) {
-					//horCounter += tickMovement;
 					cam->position += glm::vec3(right.x, right.y, right.z) * tickMovement;
 					lookPoint += glm::vec3(right.x, right.y, right.z) * tickMovement;
 
 
 				}
 				if (kbd->held[Input::Key::Code::A]) {
-					//horCounter -= tickMovement;
 					cam->position -= glm::vec3(right.x, right.y, right.z) * tickMovement;
 					lookPoint -= glm::vec3(right.x, right.y, right.z) * tickMovement;
 				}
 
 				//Up down movement
 				if (kbd->held[Input::Key::Code::Space]) {
-					//horCounter += tickMovement;
-					cam->position.y += /*vec3(up.x, up.y, up.z) * */tickMovement;
-					lookPoint.y += /*vec3(up.x, up.y, up.z) * */tickMovement;
+					cam->position.y += tickMovement;
+					lookPoint.y += tickMovement;
 
 
 				}
 				if (kbd->held[Input::Key::Code::Shift]) {
-					//horCounter -= tickMovement;
-					cam->position.y -= /*vec3(up.x, up.y, up.z) * */tickMovement;
-					lookPoint.y -= /*vec3(up.x, up.y, up.z) * */tickMovement;
+					cam->position.y -= tickMovement;
+					lookPoint.y -= tickMovement;
 				}
 
 				float rotationSpeedModifier = 2.f;
 				//Right left rotation
 				if (kbd->held[Input::Key::Code::Right]) {
-					//horCounter += tickMovement;
-					//cam->position += vec3(right.x, right.y, right.z) * tickMovement;
 					lookPoint += glm::vec3(right.x, right.y, right.z) * tickMovement * rotationSpeedModifier;
 				}
 				if (kbd->held[Input::Key::Code::Left]) {
-					//horCounter -= tickMovement;
-					//cam->position -= vec3(right.x, right.y, right.z) * tickMovement;
 					lookPoint -= glm::vec3(right.x, right.y, right.z) * tickMovement * rotationSpeedModifier;
 				}
 
 				//Up down rotation
 				if (kbd->held[Input::Key::Code::Down]) {
-					//horCounter += tickMovement;
-					//cam->position += vec3(right.x, right.y, right.z) * tickMovement;
 					lookPoint += glm::vec3(up.x, up.y, up.z) * tickMovement * rotationSpeedModifier;
 				}
 				if (kbd->held[Input::Key::Code::Up]) {
-					//horCounter -= tickMovement;
-					//cam->position -= vec3(right.x, right.y, right.z) * tickMovement;
 					lookPoint -= glm::vec3(up.x, up.y, up.z) * tickMovement * rotationSpeedModifier;
 				}
 
@@ -583,11 +503,6 @@ namespace Game {
 			float forcePower = Core::CVarReadFloat(r_force_power);
 			if (ImGui::DragFloat("Force Power", (float*)&forcePower, 1.0f, 0.0f, 5000.f))
 				Core::CVarWriteFloat(r_force_power, forcePower);
-
-			//Core::CVar* r_object_mass = Core::CVarGet("r_object_mass");
-			//float objectMass = Core::CVarReadFloat(r_object_mass);
-			//if (ImGui::DragFloat("Object Mass", (float*)&objectMass, 1.0f, 1.0f, 5000.f))
-			//	Core::CVarWriteFloat(r_object_mass, objectMass);
 
 			ImGui::End();
 

@@ -9,11 +9,6 @@
 #include "core/cvar.h"
 #include "gtc/random.hpp"
 
-
-//TODO
-//AABB SWEEP
-//EPA
-
 namespace Game {
 
 	ResponseApp::ResponseApp() {
@@ -115,8 +110,7 @@ namespace Game {
 		gameObject1->graphN->textR->BindTexture(gameObject1->graphN->textR->texture);
 
 		TextureResource textR = TextureResource();
-		textR.LoadTexture("../resources/textures/WATER.png", true);
-		//textR.LoadTexture("../resources/textures/STRIPES.png", true);
+		textR.LoadTexture("../resources/textures/STRIPES.png", true);
 		textR.BindTexture(textR.texture);
 
 		PhysicsObject* gameObject2 = new PhysicsObject();
@@ -448,12 +442,10 @@ namespace Game {
 
 				//Forward back movement
 				if (kbd->held[Input::Key::Code::W]) {
-					/*verCounter += tickMovement;*/
 					cam->position += glm::vec3(fwd.x, fwd.y, fwd.z) * tickMovement;
 					lookPoint += glm::vec3(fwd.x, fwd.y, fwd.z) * tickMovement;
 				}
 				if (kbd->held[Input::Key::Code::S]) {
-					//verCounter -= tickMovement;
 					cam->position -= glm::vec3(fwd.x, fwd.y, fwd.z) * tickMovement;
 					lookPoint -= glm::vec3(fwd.x, fwd.y, fwd.z) * tickMovement;
 
@@ -461,54 +453,42 @@ namespace Game {
 
 				//Right left movement
 				if (kbd->held[Input::Key::Code::D]) {
-					//horCounter += tickMovement;
 					cam->position += glm::vec3(right.x, right.y, right.z) * tickMovement;
 					lookPoint += glm::vec3(right.x, right.y, right.z) * tickMovement;
 
 
 				}
 				if (kbd->held[Input::Key::Code::A]) {
-					//horCounter -= tickMovement;
 					cam->position -= glm::vec3(right.x, right.y, right.z) * tickMovement;
 					lookPoint -= glm::vec3(right.x, right.y, right.z) * tickMovement;
 				}
 
 				//Up down movement
 				if (kbd->held[Input::Key::Code::Space]) {
-					//horCounter += tickMovement;
-					cam->position.y += /*vec3(up.x, up.y, up.z) * */tickMovement;
-					lookPoint.y += /*vec3(up.x, up.y, up.z) * */tickMovement;
+					cam->position.y += tickMovement;
+					lookPoint.y += tickMovement;
 
 
 				}
 				if (kbd->held[Input::Key::Code::Shift]) {
-					//horCounter -= tickMovement;
-					cam->position.y -= /*vec3(up.x, up.y, up.z) * */tickMovement;
-					lookPoint.y -= /*vec3(up.x, up.y, up.z) * */tickMovement;
+					cam->position.y -= tickMovement;
+					lookPoint.y -= tickMovement;
 				}
 
 				float rotationSpeedModifier = 2.f;
 				//Right left rotation
 				if (kbd->held[Input::Key::Code::Right]) {
-					//horCounter += tickMovement;
-					//cam->position += vec3(right.x, right.y, right.z) * tickMovement;
 					lookPoint += glm::vec3(right.x, right.y, right.z) * tickMovement * rotationSpeedModifier;
 				}
 				if (kbd->held[Input::Key::Code::Left]) {
-					//horCounter -= tickMovement;
-					//cam->position -= vec3(right.x, right.y, right.z) * tickMovement;
 					lookPoint -= glm::vec3(right.x, right.y, right.z) * tickMovement * rotationSpeedModifier;
 				}
 
 				//Up down rotation
 				if (kbd->held[Input::Key::Code::Down]) {
-					//horCounter += tickMovement;
-					//cam->position += vec3(right.x, right.y, right.z) * tickMovement;
 					lookPoint += glm::vec3(up.x, up.y, up.z) * tickMovement * rotationSpeedModifier;
 				}
 				if (kbd->held[Input::Key::Code::Up]) {
-					//horCounter -= tickMovement;
-					//cam->position -= vec3(right.x, right.y, right.z) * tickMovement;
 					lookPoint -= glm::vec3(up.x, up.y, up.z) * tickMovement * rotationSpeedModifier;
 				}
 

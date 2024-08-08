@@ -8,11 +8,6 @@
 #include <chrono>
 #include "core/physicscourse/PhysicsObject.h"
 
-
-//TODO
-//Break out physics and graphics into separate nodes
-//Contain them inside a game object
-
 namespace Game {
 
 RayIntersectApp::RayIntersectApp() {
@@ -60,12 +55,9 @@ void RayIntersectApp::Run() {
 
 	this->cam->projection = this->cam->ProjectionMatrix(1.0f, 0.1f, 2000.0f);
 
-	//PointLight pointLight = PointLight();
-	//pointLight.pos = { 1,2,1 };
-	//pointLight.intensity = 10;
 
 	DirLight dirLight = DirLight();
-	dirLight.direction = { 0.0f,-1.0f,-1.0f };
+	dirLight.direction = { 0.40f,-1.0f,0.2f };
 	dirLight.colour = { 1.0f,1.0f,1.0f,1.0f };
 	dirLight.intensity = 1.0f;
 
@@ -79,19 +71,10 @@ void RayIntersectApp::Run() {
 	gameObject1->graphN->parent = gameObject1;
 	gameObject1->physN->parent = gameObject1;
 
-	//gameObject1->graphN->shadR = std::make_shared<ShaderResource>();
 	gameObject1->graphN->position = { 2,2,-2 };
-	
 	
 	gameObject1->graphN->scaling = 2.f;
 	gameObject1->graphN->LoadGLTF("../resources/gltf/cube.gltf");
-
-	//gameObject1->graphN->scaling = 20.f;
-	//gameObject1->graphN->LoadGLTF("../resources/gltf/Avocado/Avocado.gltf");
-
-	//gameObject1->graphN->scaling = 4.f;
-	//gameObject1->graphN->LoadGLTF("../resources/gltf/FlightHelmet/FlightHelmet.gltf");
-
 	
 	gameObjects.push_back(gameObject1);
 
@@ -108,11 +91,11 @@ void RayIntersectApp::Run() {
 	if (gameObject1->graphN->textR == nullptr) {
 		gameObject1->graphN->textR = new TextureResource(TextureResource());
 	}
-	gameObject1->graphN->textR->LoadTexture("../resources/textures/BIGLEAVES.png", true);
+	gameObject1->graphN->textR->LoadTexture("../resources/textures/OHNO.png", true);
 	gameObject1->graphN->textR->BindTexture(gameObject1->graphN->textR->texture);
 
 	TextureResource textR = TextureResource();
-	textR.LoadTexture("../resources/textures/WATER.png", true);
+	textR.LoadTexture("../resources/textures/STRIPES.png", true);
 	textR.BindTexture(textR.texture);
 
 	PhysicsObject* gameObject2 = new PhysicsObject();
@@ -187,12 +170,8 @@ void RayIntersectApp::Run() {
 			gameObjects[i]->Tick(deltaTime, *this->cam, false);
 
 			dirLight.ApplyLight(gameObjects[i]->graphN->shadR->shaderProgram);
+			gameObjects[i]->Draw(deltaTime, *this->cam);
 		}
-		//mat4 vp = this->cam->projection * this->cam->view;
-
-		//Debug::DrawDebugText("0", glm::vec3(0, 0, 0), glm::vec4(1, 0, 0, 1));
-		//Debug::DrawLine(glm::vec3(1,1,1), glm::vec3(0, 0, 0), 1.0f, glm::vec4(1, 0, 0, 1), glm::vec4(0, 0, 1, 1), Debug::RenderMode::AlwaysOnTop);
-		//Debug::DrawBox(glm::vec3(-1, -1, -1), glm::quat(1,0,0,0), 1.f, glm::vec4(1, 0, 0, 1), Debug::RenderMode::WireFrame, 1.f);
 
 		
 		this->appWindow->SwapBuffers();
@@ -221,41 +200,43 @@ void RayIntersectApp::Run() {
 			}
 		}
 
-		float test = 5 * deltaTime;
+		//Absolutely bonkers ínput check
+		//Far from ideal but it works
+		float movementSpeed = 5 * deltaTime;
 
 		if (kbd->held[Input::Key::Code::Up]) {
-			verCounter += test;
-		}					 							 
+			verCounter += movementSpeed;
+		}
 		if (kbd->held[Input::Key::Code::Down]) {
-			verCounter -= test;
+			verCounter -= movementSpeed;
 		}
 
 		if (kbd->held[Input::Key::Code::Right]) {
-			horCounter += test;
+			horCounter += movementSpeed;
 		}
 		if (kbd->held[Input::Key::Code::Left]) {
-			horCounter -= test;
+			horCounter -= movementSpeed;
 		}
 
-		if (kbd->held[Input::Key::Code::Space]){
-			gameObjects[0]->graphN->radiansX += test * 0.1;
+		if (kbd->held[Input::Key::Code::Space]) {
+			gameObjects[0]->graphN->radiansX += movementSpeed * 0.1;
 		}
 		if (kbd->held[Input::Key::Code::Shift]) {
-			gameObjects[0]->graphN->radiansX -= test * 0.1;
+			gameObjects[0]->graphN->radiansX -= movementSpeed * 0.1;
 		}
 
 		if (kbd->held[Input::Key::Code::C]) {
-			gameObjects[0]->graphN->radiansY += test * 0.1;
+			gameObjects[0]->graphN->radiansY += movementSpeed * 0.1;
 		}
 		if (kbd->held[Input::Key::Code::V]) {
-			gameObjects[0]->graphN->radiansY -= test * 0.1;
+			gameObjects[0]->graphN->radiansY -= movementSpeed * 0.1;
 		}
 
 		if (kbd->held[Input::Key::Code::D]) {
-			gameObjects[0]->graphN->radiansZ += test * 0.1;
+			gameObjects[0]->graphN->radiansZ += movementSpeed * 0.1;
 		}
 		if (kbd->held[Input::Key::Code::F]) {
-			gameObjects[0]->graphN->radiansZ -= test * 0.1;
+			gameObjects[0]->graphN->radiansZ -= movementSpeed * 0.1;
 		}
 
 
@@ -279,19 +260,6 @@ RayIntersectApp::RenderUI()
 {
 	if (this->appWindow->IsOpen())
 	{
-		//ImGui::Begin("Debug");
-		//Core::CVar* r_draw_light_spheres = Core::CVarGet("r_draw_light_spheres");
-		//int drawLightSpheres = Core::CVarReadInt(r_draw_light_spheres);
-		//if (ImGui::Checkbox("Draw Light Spheres", (bool*)&drawLightSpheres))
-		//	Core::CVarWriteInt(r_draw_light_spheres, drawLightSpheres);
-
-		//Core::CVar* r_draw_light_sphere_id = Core::CVarGet("r_draw_light_sphere_id");
-		//int lightSphereId = Core::CVarReadInt(r_draw_light_sphere_id);
-		//if (ImGui::InputInt("LightSphereId", (int*)&lightSphereId))
-		//	Core::CVarWriteInt(r_draw_light_sphere_id, lightSphereId);
-
-		/*ImGui::End();*/
-
 		Debug::DispatchDebugDrawing(this->cam.get());
 		Debug::DispatchDebugTextDrawing(this->cam.get());
 	}

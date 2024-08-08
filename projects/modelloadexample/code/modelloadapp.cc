@@ -131,7 +131,7 @@ void ModelLoadApp::Run() {
 
 	camera.LookAt(glm::vec3(0, 0, 0));
 	bool pan = false;
-	float cameraCounter = 0;
+	float cameraCounter = 1.43f;
 	float cameraSpeed = 0.001f;
 
 	while (this->appWindow->IsOpen()) {

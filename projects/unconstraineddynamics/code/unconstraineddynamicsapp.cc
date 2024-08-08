@@ -86,13 +86,6 @@ void UnconstrainedDynamicsApp::Run() {
 	gameObject1->graphN->LoadGLTF("../resources/gltf/cube.gltf");
 	gameObject1->physN->LoadColliderGLTF("../resources/gltf/cube.gltf");
 
-	//gameObject1->graphN->scaling = 20.f;
-	//gameObject1->graphN->LoadGLTF("../resources/gltf/Avocado/Avocado.gltf");
-
-	//gameObject1->graphN->scaling = 4.f;
-	//gameObject1->graphN->LoadGLTF("../resources/gltf/FlightHelmet/FlightHelmet.gltf");
-	//gameObject1->physN->LoadColliderGLTF("../resources/gltf/icosphere.gltf");
-
 
 	gameObject1->physN->SetMass(Core::CVarReadFloat(Core::CVarGet("r_object_mass")));
 	gameObject1->physN->SetInertiaTensor(e_cuboid);
@@ -112,13 +105,11 @@ void UnconstrainedDynamicsApp::Run() {
 	if (gameObject1->graphN->textR == nullptr) {
 		gameObject1->graphN->textR = new TextureResource(TextureResource());
 	}
-	gameObject1->graphN->textR->LoadTexture("../resources/textures/BIGLEAVES.png", true);
-	//gameObject1->graphN->textR->LoadTexture("../resources/textures/STRIPES.png", true);
+	gameObject1->graphN->textR->LoadTexture("../resources/textures/OHNO.png", true);
 	gameObject1->graphN->textR->BindTexture(gameObject1->graphN->textR->texture);
 
 	TextureResource textR = TextureResource();
-	textR.LoadTexture("../resources/textures/WATER.png", true);
-	//textR.LoadTexture("../resources/textures/STRIPES.png", true);
+	textR.LoadTexture("../resources/textures/STRIPES.png", true);
 	textR.BindTexture(textR.texture);
 
 	PhysicsObject* gameObject2 = new PhysicsObject();
@@ -136,17 +127,17 @@ void UnconstrainedDynamicsApp::Run() {
 	physWorld->physObjs.push_back(gameObject2);
 
 
-	//std::shared_ptr<GameObject> gameObject3 = std::make_shared<GameObject>(GameObject());
-	//gameObject3->graphN = std::make_shared<GraphicsNode>(GraphicsNode());
-	//gameObject3->physN = std::make_shared<PhysicsNode>(PhysicsNode());
-	//gameObject3->graphN->parent = gameObject3;
-	//gameObject3->physN->parent = gameObject3;
+	PhysicsObject* gameObject3 = new PhysicsObject();
+	gameObject3->graphN = new GraphicsNode;
+	gameObject3->physN = new PhysicsNode;
+	gameObject3->graphN->parent = gameObject3;
+	gameObject3->physN->parent = gameObject3;
 
-	//gameObject3->graphN->shadR = gameObject1->graphN->shadR;
-	//gameObject3->graphN->position = { -2,-2,3 };
-	//gameObject3->graphN->scaling = 2.f;
-	//gameObject3->graphN->LoadGLTF("../resources/gltf/icosphere.gltf");
-	//gameObjects.push_back(gameObject3);
+	gameObject3->graphN->shadR = gameObject1->graphN->shadR;
+	gameObject3->graphN->position = { -2,-2,3 };
+	gameObject3->graphN->scaling = 2.f;
+	gameObject3->graphN->LoadGLTF("../resources/gltf/icosphere.gltf");
+	physWorld->physObjs.push_back(gameObject3);
 
 	BlinnPhongMaterial bpMaterial = BlinnPhongMaterial(gameObject1->graphN->shadR->shaderProgram);
 	bpMaterial.shininess = 10.0f;
@@ -174,9 +165,6 @@ void UnconstrainedDynamicsApp::Run() {
 	picker->highlightMaterial = highlightPointer;
 
 
-	/*
-	float horCounter = 0;
-	float verCounter = 0;*/
 	glm::vec3 lookPoint = glm::vec3(0, 0, 0);
 
 
@@ -191,18 +179,6 @@ void UnconstrainedDynamicsApp::Run() {
 	float invIntersectionBoxScale = 1/0.5;
 
 
-	////this works
-	//glm::vec3* testVector = new glm::vec3(1);
-	//glm::vec3* deepCopy = new glm::vec3(*testVector);
-	//deepCopy->x = 2;
-
-	////This also works;
-	//std::shared_ptr<glm::vec3> testVec = std::make_shared<glm::vec3>(glm::vec3(1));
-	//std::shared_ptr<glm::vec3> testVecDeep = std::make_shared<glm::vec3>(*testVec);
-	//testVecDeep->x = 2;
-
-
-
 	uint worldCounter = 0;
 
 	while (this->appWindow->IsOpen()) {
@@ -210,7 +186,6 @@ void UnconstrainedDynamicsApp::Run() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-		//cam->position = { (sin(horCounter / 10) * 5), verCounter , (-cos(horCounter / 10) * 5) };
 		this->cam->view = glm::inverse(this->cam->ViewMatrix(lookPoint));
 
 		this->appWindow->Update();
@@ -229,12 +204,6 @@ void UnconstrainedDynamicsApp::Run() {
 				for (int i = 0; i < physWorld->physObjs.size(); i++) {
 					dirLight.ApplyLight(physWorld->physObjs[i]->graphN->shadR->shaderProgram);
 				}
-
-				//Debug::DrawDebugText("HELLO", glm::vec3(0, 0, 0), glm::vec4(1, 0, 0, 1));
-				//Debug::DrawLine(glm::vec3(1,1,1), glm::vec3(0, 0, 0), 1.0f, glm::vec4(1, 0, 0, 1), glm::vec4(0, 0, 1, 1), Debug::RenderMode::AlwaysOnTop);
-				//Debug::DrawBox(glm::vec3(-1, -1, -1), glm::quat(1,0,0,0), 1.f, glm::vec4(1, 0, 0, 1), Debug::RenderMode::WireFrame, 1.f);
-
-
 
 				Ray ray;
 				if (mouse->pressed[Input::Mouse::Button::LeftButton]) {
@@ -262,7 +231,7 @@ void UnconstrainedDynamicsApp::Run() {
 				}
 
 				//Debug::DrawDebugText("INTERSECT", intersection, glm::vec4(1, 0, 0, 1));
-				Debug::DrawBox(intersection * invIntersectionBoxScale, glm::quat(1, 0, 0, 0), intersectionBoxScale, glm::vec4(1, 0, 0, 1), Debug::RenderMode::AlwaysOnTop, 1.f);
+				//Debug::DrawBox(intersection * invIntersectionBoxScale, glm::quat(1, 0, 0, 0), intersectionBoxScale, glm::vec4(1, 0, 0, 1), Debug::RenderMode::AlwaysOnTop, 1.f);
 
 				int drawAxes = Core::CVarReadInt(Core::CVarGet("r_draw_axes"));
 				if (drawAxes) {
@@ -292,7 +261,6 @@ void UnconstrainedDynamicsApp::Run() {
 		else { //DISPLAY LAST FRAME
 			worldStates[worldFrame-1]->physObjs[0]->physN->SetMass(Core::CVarReadFloat(Core::CVarGet("r_object_mass")));
 			worldStates[worldFrame-1]->Tick((float)deltaTime, *this->cam);
-			//physWorld = worldStates[worldFrame - 1];
 
 			for (int i = 0; i < worldStates[worldFrame-1]->physObjs.size(); i++) {
 				dirLight.ApplyLight(worldStates[worldFrame-1]->physObjs[i]->graphN->shadR->shaderProgram);
@@ -320,12 +288,10 @@ void UnconstrainedDynamicsApp::Run() {
 
 			//Forward back movement
 			if (kbd->held[Input::Key::Code::W]) {
-				/*verCounter += tickMovement;*/
 				cam->position += glm::vec3(fwd.x, fwd.y, fwd.z) * tickMovement;
 				lookPoint += glm::vec3(fwd.x, fwd.y, fwd.z) * tickMovement;
 			}
 			if (kbd->held[Input::Key::Code::S]) {
-				//verCounter -= tickMovement;
 				cam->position -= glm::vec3(fwd.x, fwd.y, fwd.z) * tickMovement;
 				lookPoint -= glm::vec3(fwd.x, fwd.y, fwd.z) * tickMovement;
 
@@ -333,61 +299,47 @@ void UnconstrainedDynamicsApp::Run() {
 
 			//Right left movement
 			if (kbd->held[Input::Key::Code::D]) {
-				//horCounter += tickMovement;
 				cam->position += glm::vec3(right.x, right.y, right.z) * tickMovement;
 				lookPoint += glm::vec3(right.x, right.y, right.z) * tickMovement;
 
 
 			}
 			if (kbd->held[Input::Key::Code::A]) {
-				//horCounter -= tickMovement;
 				cam->position -= glm::vec3(right.x, right.y, right.z) * tickMovement;
 				lookPoint -= glm::vec3(right.x, right.y, right.z) * tickMovement;
 			}
 
 			//Up down movement
 			if (kbd->held[Input::Key::Code::Space]) {
-				//horCounter += tickMovement;
-				cam->position.y += /*vec3(up.x, up.y, up.z) * */tickMovement;
-				lookPoint.y += /*vec3(up.x, up.y, up.z) * */tickMovement;
+				cam->position.y += tickMovement;
+				lookPoint.y += tickMovement;
 
 
 			}
 			if (kbd->held[Input::Key::Code::Shift]) {
-				//horCounter -= tickMovement;
-				cam->position.y -= /*vec3(up.x, up.y, up.z) * */tickMovement;
-				lookPoint.y -= /*vec3(up.x, up.y, up.z) * */tickMovement;
+				cam->position.y -= tickMovement;
+				lookPoint.y -= tickMovement;
 			}
 
 			float rotationSpeedModifier = 2.f;
 			//Right left rotation
 			if (kbd->held[Input::Key::Code::Right]) {
-				//horCounter += tickMovement;
-				//cam->position += vec3(right.x, right.y, right.z) * tickMovement;
 				lookPoint += glm::vec3(right.x, right.y, right.z) * tickMovement * rotationSpeedModifier;
 			}
 			if (kbd->held[Input::Key::Code::Left]) {
-				//horCounter -= tickMovement;
-				//cam->position -= vec3(right.x, right.y, right.z) * tickMovement;
 				lookPoint -= glm::vec3(right.x, right.y, right.z) * tickMovement * rotationSpeedModifier;
 			}
 
 			//Up down rotation
 			if (kbd->held[Input::Key::Code::Down]) {
-				//horCounter += tickMovement;
-				//cam->position += vec3(right.x, right.y, right.z) * tickMovement;
 				lookPoint += glm::vec3(up.x, up.y, up.z) * tickMovement * rotationSpeedModifier;
 			}
 			if (kbd->held[Input::Key::Code::Up]) {
-				//horCounter -= tickMovement;
-				//cam->position -= vec3(right.x, right.y, right.z) * tickMovement;
 				lookPoint -= glm::vec3(up.x, up.y, up.z) * tickMovement * rotationSpeedModifier;
 			}
 
-		} //CAMERA CONTROLS
+		}
 
-		//std::cout << glm::length(worldStates[0]->physObjs[0]->graphN->position) << std::endl;
-		//std::cout << glm::length(worldStates[worldStates.size()-1]->physObjs[0]->graphN->position) << std::endl;
 
 		//Deltatime
 		auto currentTime = GetCurrentEpochTime();
@@ -433,11 +385,6 @@ UnconstrainedDynamicsApp::RenderUI()
 		int drawAxes = Core::CVarReadInt(r_draw_axes);
 		if (ImGui::Checkbox("Draw Axes", (bool*)&drawAxes))
 			Core::CVarWriteInt(r_draw_axes, drawAxes);
-
-		//Core::CVar* r_draw_light_sphere_id = Core::CVarGet("r_draw_light_sphere_id");
-		//int lightSphereId = Core::CVarReadInt(r_draw_light_sphere_id);
-		//if (ImGui::InputInt("LightSphereId", (int*)&lightSphereId))
-		//	Core::CVarWriteInt(r_draw_light_sphere_id, lightSphereId);
 
 		ImGui::End();
 
