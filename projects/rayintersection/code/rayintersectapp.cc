@@ -1,0 +1,308 @@
+#pragma once
+#include "config.h"
+#include "render/input/inputserver.h"
+#include "render/input/keyboard.h"
+#include <iostream>
+#include "rayintersectapp.h"
+#include "core/physicscourse/Plane.h"
+#include <chrono>
+#include "core/physicscourse/PhysicsObject.h"
+
+
+//TODO
+//Break out physics and graphics into separate nodes
+//Contain them inside a game object
+
+namespace Game {
+
+RayIntersectApp::RayIntersectApp() {
+	cam = nullptr;
+	this->picker = std::make_shared<Picker>(Picker());
+}
+
+RayIntersectApp::~RayIntersectApp() {
+	
+}
+
+bool RayIntersectApp::Open() {
+	App::Open();
+
+	Core::CVarCreate(Core::CVar_Int, "r_draw_AABBs", "1");
+	Core::CVarCreate(Core::CVar_Int, "r_draw_collider", "0");
+	Core::CVarCreate(Core::CVar_Int, "r_draw_axes", "0");
+
+	Core::CVarCreate(Core::CVar_Int, "r_damping", "0.f");
+	
+	this->appWindow = new Display::Window();
+	this->appWindow->SetSize(500, 500);
+	this->appWindow->Open();
+	this->cam = std::make_shared<Camera>(Camera(500, 500, { 10.0f,5.0f,10.0f }));
+	if (this->appWindow->IsOpen()) {
+		glClearColor(0.5f, 0.5f, 0.5f, 1.f);
+		Debug::InitDebugRendering();
+		this->appWindow->SetUiRender([this]() {
+			this->RenderUI();
+			});
+
+		return true;
+	}
+	return false;
+}
+
+void RayIntersectApp::Close() {
+	App::Close();
+}
+
+void RayIntersectApp::Run() {
+	glEnable(GL_DEPTH_TEST);
+	Input::Keyboard* kbd = Input::GetDefaultKeyboard();
+	Input::Mouse* mouse = Input::GetDefaultMouse();
+
+	this->cam->projection = this->cam->ProjectionMatrix(1.0f, 0.1f, 2000.0f);
+
+	//PointLight pointLight = PointLight();
+	//pointLight.pos = { 1,2,1 };
+	//pointLight.intensity = 10;
+
+	DirLight dirLight = DirLight();
+	dirLight.direction = { 0.0f,-1.0f,-1.0f };
+	dirLight.colour = { 1.0f,1.0f,1.0f,1.0f };
+	dirLight.intensity = 1.0f;
+
+
+	std::vector<PhysicsObject*> gameObjects;
+
+	PhysicsObject* gameObject1 = new PhysicsObject();
+
+	gameObject1->graphN = new GraphicsNode();
+	gameObject1->physN = new PhysicsNode();
+	gameObject1->graphN->parent = gameObject1;
+	gameObject1->physN->parent = gameObject1;
+
+	//gameObject1->graphN->shadR = std::make_shared<ShaderResource>();
+	gameObject1->graphN->position = { 2,2,-2 };
+	
+	
+	gameObject1->graphN->scaling = 2.f;
+	gameObject1->graphN->LoadGLTF("../resources/gltf/cube.gltf");
+
+	//gameObject1->graphN->scaling = 20.f;
+	//gameObject1->graphN->LoadGLTF("../resources/gltf/Avocado/Avocado.gltf");
+
+	//gameObject1->graphN->scaling = 4.f;
+	//gameObject1->graphN->LoadGLTF("../resources/gltf/FlightHelmet/FlightHelmet.gltf");
+
+	
+	gameObjects.push_back(gameObject1);
+
+	//Setting up shaders
+
+	std::string vertexShaderString;
+	std::string fragmentShaderString;
+	vertexShaderString = gameObject1->graphN->shadR->LoadShaderFromFile("../resources/shaders/BlinnPhongBaseVertex.glsl"); //Base Blinn Phong Shaders
+	fragmentShaderString = gameObject1->graphN->shadR->LoadShaderFromFile("../resources/shaders/BlinnPhongBaseFragment.glsl");
+
+	gameObject1->graphN->shadR->vertexShader = gameObject1->graphN->shadR->SetupShader(vertexShaderString.c_str(), GL_VERTEX_SHADER);
+	gameObject1->graphN->shadR->fragmentShader = gameObject1->graphN->shadR->SetupShader(fragmentShaderString.c_str(), GL_FRAGMENT_SHADER);
+	gameObject1->graphN->shadR->shaderProgram = new GLuint(gameObject1->graphN->shadR->CreateProgram(gameObject1->graphN->shadR->vertexShader, gameObject1->graphN->shadR->fragmentShader));
+	if (gameObject1->graphN->textR == nullptr) {
+		gameObject1->graphN->textR = new TextureResource(TextureResource());
+	}
+	gameObject1->graphN->textR->LoadTexture("../resources/textures/BIGLEAVES.png", true);
+	gameObject1->graphN->textR->BindTexture(gameObject1->graphN->textR->texture);
+
+	TextureResource textR = TextureResource();
+	textR.LoadTexture("../resources/textures/WATER.png", true);
+	textR.BindTexture(textR.texture);
+
+	PhysicsObject* gameObject2 = new PhysicsObject();
+	gameObject2->graphN = new GraphicsNode();
+	gameObject2->physN = new PhysicsNode();
+	gameObject2->graphN->parent = gameObject2;
+	gameObject2->physN->parent = gameObject2;
+	gameObject2->graphN->shadR = gameObject1->graphN->shadR;
+	gameObject2->graphN->position = { 2,-2,-1 };
+	gameObject2->graphN->scaling = 1.f;
+	gameObject2->graphN->LoadGLTF("../resources/gltf/icosphere.gltf");
+	gameObjects.push_back(gameObject2);
+
+	PhysicsObject*  gameObject3 = new PhysicsObject();
+	gameObject3->graphN = new GraphicsNode();
+	gameObject3->physN = new PhysicsNode();
+	gameObject3->graphN->parent = gameObject3;
+	gameObject3->physN->parent = gameObject3;
+
+	gameObject3->graphN->shadR = gameObject1->graphN->shadR;
+	gameObject3->graphN->position = { -2,-2,3 };
+	gameObject3->graphN->scaling = 2.f;
+	gameObject3->graphN->LoadGLTF("../resources/gltf/icosphere.gltf");
+	gameObjects.push_back(gameObject3);
+
+
+	BlinnPhongMaterial bpMaterial = BlinnPhongMaterial(gameObject1->graphN->shadR->shaderProgram);
+	bpMaterial.shininess = 10.0f;
+	bpMaterial.ambient = { 0.1f, 0.1f, 0.1f, 1.0f };
+	bpMaterial.diffuse = { 1.0f,1.0f,1.0f,1.0f };
+	bpMaterial.specular = { 1.0f,1.0f,1.0f,1.0f };
+	BlinnPhongMaterial highlightMaterial = bpMaterial;
+	bpMaterial.texture = new GLuint(gameObject1->graphN->textR->texture);
+	highlightMaterial.texture = new GLuint(textR.texture);
+	BlinnPhongMaterial* bpMaterialPointer = new BlinnPhongMaterial(bpMaterial);
+	BlinnPhongMaterial* highlightPointer = new BlinnPhongMaterial(highlightMaterial);
+
+		for (int i = 0; i < gameObjects.size(); i++) {
+			GraphicsNode* currentGraphN = gameObjects[i]->graphN;
+			//Assign Blinn Phong Material to all primitives of all meshes
+			for (int j = 0; j < currentGraphN->meshVector.size(); j++) {
+				MeshResource* mesh = currentGraphN->meshVector[j];
+				for (int k = 0; k < mesh->primitiveVector.size(); k++) {
+					mesh->primitiveVector[k].material = bpMaterialPointer;
+				}
+			}
+		}
+
+	picker->baseMaterial = bpMaterialPointer;
+	picker->highlightMaterial = highlightPointer;
+	
+	float horCounter = 0;
+	float verCounter = 0;
+	glm::vec3 lookPoint = glm::vec3(0, 0, 0);
+
+	double upperClamp = 1 / 60.0 * 1000000;
+	double deltaTime = upperClamp;
+
+	auto startTime = GetCurrentEpochTime();
+
+	while (this->appWindow->IsOpen()) {
+		glEnable(GL_DEPTH_TEST);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+		cam->position = { (sin(horCounter / 10) * 20), verCounter , (-cos(horCounter / 10) * 20)};
+		this->cam->view = glm::inverse(this->cam->ViewMatrix(lookPoint));
+		
+		this->appWindow->Update();
+
+		for (int i = 0; i < gameObjects.size(); i++) {
+			gameObjects[i]->Tick(deltaTime, *this->cam, false);
+
+			dirLight.ApplyLight(gameObjects[i]->graphN->shadR->shaderProgram);
+		}
+		//mat4 vp = this->cam->projection * this->cam->view;
+
+		//Debug::DrawDebugText("0", glm::vec3(0, 0, 0), glm::vec4(1, 0, 0, 1));
+		//Debug::DrawLine(glm::vec3(1,1,1), glm::vec3(0, 0, 0), 1.0f, glm::vec4(1, 0, 0, 1), glm::vec4(0, 0, 1, 1), Debug::RenderMode::AlwaysOnTop);
+		//Debug::DrawBox(glm::vec3(-1, -1, -1), glm::quat(1,0,0,0), 1.f, glm::vec4(1, 0, 0, 1), Debug::RenderMode::WireFrame, 1.f);
+
+		
+		this->appWindow->SwapBuffers();
+
+		if (kbd->pressed[Input::Key::Code::Escape]) {
+			this->Exit();
+		}
+
+		Ray ray;
+		if (mouse->held[Input::Mouse::Button::LeftButton]) {
+			ray = picker->ShootRay(appWindow, cam.get());
+			//See if any node intersects
+			PhysicsObject* collidedObject = nullptr;
+			float closestDistance = std::numeric_limits<float>::max();
+			for (int i = 0; i < gameObjects.size(); i++) {
+				float intersectionDistance = picker->IntersectsWithPhysicsObject(ray, gameObjects[i], cam->view);
+				if (intersectionDistance >= 0 && intersectionDistance < closestDistance) {
+					closestDistance = intersectionDistance;
+					collidedObject = gameObjects[i];
+				}
+			}
+
+			picker->RemoveHighlight();
+			if (collidedObject != nullptr) {
+					picker->AddHighlight(collidedObject->graphN);
+			}
+		}
+
+		float test = 5 * deltaTime;
+
+		if (kbd->held[Input::Key::Code::Up]) {
+			verCounter += test;
+		}					 							 
+		if (kbd->held[Input::Key::Code::Down]) {
+			verCounter -= test;
+		}
+
+		if (kbd->held[Input::Key::Code::Right]) {
+			horCounter += test;
+		}
+		if (kbd->held[Input::Key::Code::Left]) {
+			horCounter -= test;
+		}
+
+		if (kbd->held[Input::Key::Code::Space]){
+			gameObjects[0]->graphN->radiansX += test * 0.1;
+		}
+		if (kbd->held[Input::Key::Code::Shift]) {
+			gameObjects[0]->graphN->radiansX -= test * 0.1;
+		}
+
+		if (kbd->held[Input::Key::Code::C]) {
+			gameObjects[0]->graphN->radiansY += test * 0.1;
+		}
+		if (kbd->held[Input::Key::Code::V]) {
+			gameObjects[0]->graphN->radiansY -= test * 0.1;
+		}
+
+		if (kbd->held[Input::Key::Code::D]) {
+			gameObjects[0]->graphN->radiansZ += test * 0.1;
+		}
+		if (kbd->held[Input::Key::Code::F]) {
+			gameObjects[0]->graphN->radiansZ -= test * 0.1;
+		}
+
+
+
+		auto currentTime = GetCurrentEpochTime();
+		deltaTime = (currentTime - startTime) * 0.000001;
+		if (deltaTime > upperClamp) {
+			deltaTime = upperClamp;
+		}
+		startTime = currentTime;
+	}
+}
+
+void RayIntersectApp::Exit() {
+	App::Exit();
+	this->appWindow->Close();
+}
+
+void
+RayIntersectApp::RenderUI()
+{
+	if (this->appWindow->IsOpen())
+	{
+		//ImGui::Begin("Debug");
+		//Core::CVar* r_draw_light_spheres = Core::CVarGet("r_draw_light_spheres");
+		//int drawLightSpheres = Core::CVarReadInt(r_draw_light_spheres);
+		//if (ImGui::Checkbox("Draw Light Spheres", (bool*)&drawLightSpheres))
+		//	Core::CVarWriteInt(r_draw_light_spheres, drawLightSpheres);
+
+		//Core::CVar* r_draw_light_sphere_id = Core::CVarGet("r_draw_light_sphere_id");
+		//int lightSphereId = Core::CVarReadInt(r_draw_light_sphere_id);
+		//if (ImGui::InputInt("LightSphereId", (int*)&lightSphereId))
+		//	Core::CVarWriteInt(r_draw_light_sphere_id, lightSphereId);
+
+		/*ImGui::End();*/
+
+		Debug::DispatchDebugDrawing(this->cam.get());
+		Debug::DispatchDebugTextDrawing(this->cam.get());
+	}
+}
+
+//Lifted from implementation done in multiplayer game for S0012E
+unsigned long long RayIntersectApp::GetCurrentEpochTime() {
+	auto now = std::chrono::system_clock::now();
+	auto duration = now.time_since_epoch();
+	auto epoch_ms = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
+	return (unsigned long long)epoch_ms;
+}
+
+}
