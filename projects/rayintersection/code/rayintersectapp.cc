@@ -64,6 +64,7 @@ void RayIntersectApp::Run() {
 
 	std::vector<PhysicsObject*> gameObjects;
 
+	//Create initial physics object
 	PhysicsObject* gameObject1 = new PhysicsObject();
 
 	gameObject1->graphN = new GraphicsNode();
@@ -79,7 +80,6 @@ void RayIntersectApp::Run() {
 	gameObjects.push_back(gameObject1);
 
 	//Setting up shaders
-
 	std::string vertexShaderString;
 	std::string fragmentShaderString;
 	vertexShaderString = gameObject1->graphN->shadR->LoadShaderFromFile("../resources/shaders/BlinnPhongBaseVertex.glsl"); //Base Blinn Phong Shaders
@@ -94,10 +94,12 @@ void RayIntersectApp::Run() {
 	gameObject1->graphN->textR->LoadTexture("../resources/textures/OHNO.png", true);
 	gameObject1->graphN->textR->BindTexture(gameObject1->graphN->textR->texture);
 
+	//Load texture to use as highlight
 	TextureResource textR = TextureResource();
 	textR.LoadTexture("../resources/textures/STRIPES.png", true);
 	textR.BindTexture(textR.texture);
 
+	//Set up additional physics objects
 	PhysicsObject* gameObject2 = new PhysicsObject();
 	gameObject2->graphN = new GraphicsNode();
 	gameObject2->physN = new PhysicsNode();
@@ -121,7 +123,7 @@ void RayIntersectApp::Run() {
 	gameObject3->graphN->LoadGLTF("../resources/gltf/icosphere.gltf");
 	gameObjects.push_back(gameObject3);
 
-
+	//Create object material
 	BlinnPhongMaterial bpMaterial = BlinnPhongMaterial(gameObject1->graphN->shadR->shaderProgram);
 	bpMaterial.shininess = 10.0f;
 	bpMaterial.ambient = { 0.1f, 0.1f, 0.1f, 1.0f };
@@ -166,6 +168,7 @@ void RayIntersectApp::Run() {
 		
 		this->appWindow->Update();
 
+		//Render all objects
 		for (int i = 0; i < gameObjects.size(); i++) {
 			gameObjects[i]->Tick(deltaTime, *this->cam, false);
 
@@ -200,10 +203,8 @@ void RayIntersectApp::Run() {
 			}
 		}
 
-		//Absolutely bonkers ínput check
-		//Far from ideal but it works
-		float movementSpeed = 5 * deltaTime;
-
+		//Rotate camera according to arrow keys pressed
+		float movementSpeed = 10 * deltaTime;
 		if (kbd->held[Input::Key::Code::Up]) {
 			verCounter += movementSpeed;
 		}
@@ -218,29 +219,9 @@ void RayIntersectApp::Run() {
 			horCounter -= movementSpeed;
 		}
 
-		if (kbd->held[Input::Key::Code::Space]) {
-			gameObjects[0]->graphN->radiansX += movementSpeed * 0.1;
-		}
-		if (kbd->held[Input::Key::Code::Shift]) {
-			gameObjects[0]->graphN->radiansX -= movementSpeed * 0.1;
-		}
 
-		if (kbd->held[Input::Key::Code::C]) {
-			gameObjects[0]->graphN->radiansY += movementSpeed * 0.1;
-		}
-		if (kbd->held[Input::Key::Code::V]) {
-			gameObjects[0]->graphN->radiansY -= movementSpeed * 0.1;
-		}
-
-		if (kbd->held[Input::Key::Code::D]) {
-			gameObjects[0]->graphN->radiansZ += movementSpeed * 0.1;
-		}
-		if (kbd->held[Input::Key::Code::F]) {
-			gameObjects[0]->graphN->radiansZ -= movementSpeed * 0.1;
-		}
-
-
-
+		//Deltatime
+		//Clamp deltatime to prevent physics simulation to run haywire in case of low frame rate
 		auto currentTime = GetCurrentEpochTime();
 		deltaTime = (currentTime - startTime) * 0.000001;
 		if (deltaTime > upperClamp) {

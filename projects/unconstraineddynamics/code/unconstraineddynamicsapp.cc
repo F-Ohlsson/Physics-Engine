@@ -230,15 +230,6 @@ void UnconstrainedDynamicsApp::Run() {
 					}
 				}
 
-				//Debug::DrawDebugText("INTERSECT", intersection, glm::vec4(1, 0, 0, 1));
-				//Debug::DrawBox(intersection * invIntersectionBoxScale, glm::quat(1, 0, 0, 0), intersectionBoxScale, glm::vec4(1, 0, 0, 1), Debug::RenderMode::AlwaysOnTop, 1.f);
-
-				int drawAxes = Core::CVarReadInt(Core::CVarGet("r_draw_axes"));
-				if (drawAxes) {
-					Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(3, 0, 0), 1.0f, glm::vec4(1, 0, 0, 1), glm::vec4(1, 0, 0, 1), Debug::RenderMode::AlwaysOnTop);
-					Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 3, 0), 1.0f, glm::vec4(0, 1, 0, 1), glm::vec4(0, 1, 0, 1), Debug::RenderMode::AlwaysOnTop);
-					Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 0, 3), 1.0f, glm::vec4(0, 0, 1, 1), glm::vec4(0, 0, 1, 1), Debug::RenderMode::AlwaysOnTop);
-				}
 
 				PhysicsWorld* newState = new PhysicsWorld(*physWorld);
 				worldStates.push_back(newState);
@@ -267,6 +258,18 @@ void UnconstrainedDynamicsApp::Run() {
 			}
 
 		}
+
+
+		//Draw axes if troggled in UI
+		if (Core::CVarReadInt(Core::CVarGet("r_draw_axes"))) {
+			Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(3, 0, 0), 1.0f, glm::vec4(1, 0, 0, 1), glm::vec4(1, 0, 0, 1), Debug::RenderMode::AlwaysOnTop);
+			Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 3, 0), 1.0f, glm::vec4(0, 1, 0, 1), glm::vec4(0, 1, 0, 1), Debug::RenderMode::AlwaysOnTop);
+			Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 0, 3), 1.0f, glm::vec4(0, 0, 1, 1), glm::vec4(0, 0, 1, 1), Debug::RenderMode::AlwaysOnTop);
+			Debug::DrawDebugText("X", glm::vec3(2, 0, 0), glm::vec4(1, 0, 0, 1));
+			Debug::DrawDebugText("Y", glm::vec3(0, 2, 0), glm::vec4(0, 1, 0, 1));
+			Debug::DrawDebugText("Z", glm::vec3(0, 0, 2), glm::vec4(0, 0, 1, 1));
+		}
+
 		this->appWindow->SwapBuffers();
 
 
@@ -342,6 +345,7 @@ void UnconstrainedDynamicsApp::Run() {
 
 
 		//Deltatime
+		//Clamp deltatime to prevent physics simulation to run haywire in case of low frame rate
 		auto currentTime = GetCurrentEpochTime();
 		deltaTime = (currentTime - startTime) * 0.000001;
 		if (deltaTime > upperClamp) {
@@ -352,6 +356,7 @@ void UnconstrainedDynamicsApp::Run() {
 }
 
 void UnconstrainedDynamicsApp::Exit() {
+	//Delete allocated worldstates memory
 	while (!this->worldStates.empty()) {
 		PhysicsWorld* tempPointer = this->worldStates.back();
 		this->worldStates.erase(this->worldStates.end() - 1);
@@ -368,7 +373,6 @@ UnconstrainedDynamicsApp::RenderUI()
 	if (this->appWindow->IsOpen())
 	{
 		ImGui::Begin("Debug");
-
 
 		Core::CVar* r_draw_AABBs = Core::CVarGet("r_draw_AABBs");
 		int drawAABBs = Core::CVarReadInt(r_draw_AABBs);
@@ -390,19 +394,20 @@ UnconstrainedDynamicsApp::RenderUI()
 
 		ImGui::Begin("Physics");
 
-
 		Core::CVar* r_force_power = Core::CVarGet("r_force_power");
 		float forcePower = Core::CVarReadFloat(r_force_power);
 		if (ImGui::DragFloat("Force Power", (float*)&forcePower, 1.0f, 0.0f, 5000.f))
 			Core::CVarWriteFloat(r_force_power, forcePower);
 
-		Core::CVar* r_object_mass = Core::CVarGet("r_object_mass");
-		float objectMass = Core::CVarReadFloat(r_object_mass);
-		if (ImGui::DragFloat("Object Mass", (float*)&objectMass, 1.0f, 1.0f, 5000.f))
-			Core::CVarWriteFloat(r_object_mass, objectMass);
+		//Core::CVar* r_object_mass = Core::CVarGet("r_object_mass");
+		//float objectMass = Core::CVarReadFloat(r_object_mass);
+		//if (ImGui::DragFloat("Object Mass", (float*)&objectMass, 1.0f, 1.0f, 5000.f))
+		//	Core::CVarWriteFloat(r_object_mass, objectMass);
 
 		ImGui::End();
 
+
+		//Rewind function UI
 		ImGui::Begin("Replay");
 
 		Core::CVar* r_pause = Core::CVarGet("r_pause");

@@ -290,17 +290,7 @@ namespace Game {
 						}
 					}
 
-					int drawAxes = Core::CVarReadInt(Core::CVarGet("r_draw_axes"));
-					if (drawAxes) {
-						Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(3, 0, 0), 1.0f, glm::vec4(1, 0, 0, 1), glm::vec4(1, 0, 0, 1), Debug::RenderMode::AlwaysOnTop);
-						Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 3, 0), 1.0f, glm::vec4(0, 1, 0, 1), glm::vec4(0, 1, 0, 1), Debug::RenderMode::AlwaysOnTop);
-						Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 0, 3), 1.0f, glm::vec4(0, 0, 1, 1), glm::vec4(0, 0, 1, 1), Debug::RenderMode::AlwaysOnTop);
 
-						Debug::DrawDebugText("X", glm::vec3(2, 0, 0), glm::vec4(1, 0, 0, 1));
-						Debug::DrawDebugText("Y", glm::vec3(0, 2, 0), glm::vec4(0, 1, 0, 1));
-						Debug::DrawDebugText("Z", glm::vec3(0, 0, 2), glm::vec4(0, 0, 1, 1));
-
-					}
 
 					PhysicsWorld* newState = new PhysicsWorld(*physWorld);
 					worldStates.push_back(newState);
@@ -328,6 +318,17 @@ namespace Game {
 				}
 
 			}
+
+			//Draw axes if troggled in UI
+			if (Core::CVarReadInt(Core::CVarGet("r_draw_axes"))) {
+				Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(3, 0, 0), 1.0f, glm::vec4(1, 0, 0, 1), glm::vec4(1, 0, 0, 1), Debug::RenderMode::AlwaysOnTop);
+				Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 3, 0), 1.0f, glm::vec4(0, 1, 0, 1), glm::vec4(0, 1, 0, 1), Debug::RenderMode::AlwaysOnTop);
+				Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 0, 3), 1.0f, glm::vec4(0, 0, 1, 1), glm::vec4(0, 0, 1, 1), Debug::RenderMode::AlwaysOnTop);
+				Debug::DrawDebugText("X", glm::vec3(2, 0, 0), glm::vec4(1, 0, 0, 1));
+				Debug::DrawDebugText("Y", glm::vec3(0, 2, 0), glm::vec4(0, 1, 0, 1));
+				Debug::DrawDebugText("Z", glm::vec3(0, 0, 2), glm::vec4(0, 0, 1, 1));
+			}
+
 			this->appWindow->SwapBuffers();
 
 
@@ -427,12 +428,12 @@ namespace Game {
 					lookPoint -= glm::vec3(up.x, up.y, up.z) * tickMovement * rotationSpeedModifier;
 				}
 
-			} //CAMERA CONTROLS
+			}
 
 			//Deltatime
+			//Clamp deltatime to prevent physics simulation to run haywire in case of low frame rate
 			auto currentTime = GetCurrentEpochTime();
 			deltaTime = (currentTime - startTime) * 0.000001;
-			//std::cout << "FRAMERATE " << 1 / deltaTime << std::endl;
 			if (deltaTime > upperClamp) {
 				deltaTime = upperClamp;
 			}

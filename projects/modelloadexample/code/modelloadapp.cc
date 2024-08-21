@@ -41,6 +41,7 @@ void ModelLoadApp::Run() {
 
 	std::vector<GraphicsNode*> graphNodes;
 
+	//Set up physics object
 	PhysicsObject* obj1 = new PhysicsObject;
 	PhysicsNode* pNode1 = new PhysicsNode;
 	GraphicsNode* gNode1 = new GraphicsNode;
@@ -57,12 +58,12 @@ void ModelLoadApp::Run() {
 	graphNodes.push_back(gNode1);
 
 	//Setting up shaders
-
 	std::string vertexShaderString;
 	std::string fragmentShaderString;
 	vertexShaderString = gNode1->shadR->LoadShaderFromFile("../resources/shaders/BlinnPhongBaseVertex.glsl"); //Base Blinn Phong Shaders
 	fragmentShaderString = gNode1->shadR->LoadShaderFromFile("../resources/shaders/BlinnPhongBaseFragment.glsl");
 
+	//Attach shaders and texture to physics object1
 	gNode1->shadR->vertexShader = gNode1->shadR->SetupShader(vertexShaderString.c_str(), GL_VERTEX_SHADER);
 	gNode1->shadR->fragmentShader = gNode1->shadR->SetupShader(fragmentShaderString.c_str(), GL_FRAGMENT_SHADER);
 	gNode1->shadR->shaderProgram = new GLuint(gNode1->shadR->CreateProgram(gNode1->shadR->vertexShader, gNode1->shadR->fragmentShader));
@@ -70,7 +71,7 @@ void ModelLoadApp::Run() {
 	if (gNode1->textR == nullptr) {
 		gNode1->textR = new TextureResource(TextureResource());
 	}
-	gNode1->textR->LoadTexture("../resources/textures/OHNO.png", true);
+	gNode1->textR->LoadTexture("../resources/textures/STRIPES.png", true);
 	gNode1->textR->BindTexture(gNode1->textR->texture);
 
 
@@ -130,7 +131,7 @@ void ModelLoadApp::Run() {
 
 
 	camera.LookAt(glm::vec3(0, 0, 0));
-	bool pan = false;
+	bool cameraMovement = false;
 	float cameraCounter = 1.43f;
 	float cameraSpeed = 0.001f;
 
@@ -140,11 +141,13 @@ void ModelLoadApp::Run() {
 
 		this->appWindow->Update();
 
+
+		//Press spacebar to resume/pause camera rotation
 		if (kbd->pressed[Input::Key::Code::Space]) {
-			pan = pan ? false : true;
+			cameraMovement = cameraMovement ? false : true;
 		}
 
-		if (pan) {
+		if (cameraMovement) {
 			cameraCounter += cameraSpeed;
 		}
 
@@ -159,10 +162,10 @@ void ModelLoadApp::Run() {
 
 		this->appWindow->SwapBuffers();
 
+		//Press escape to close application
 		if (kbd->pressed[Input::Key::Code::Escape]) {
 				this->Exit();
 		}
-		//this->Exit();
 	}
 }
 

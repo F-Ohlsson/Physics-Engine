@@ -19,7 +19,8 @@ void Ray::CreateRayBetween(glm::vec3 startPos, glm::vec3 endPos) {
 	this->direction = glm::normalize(endPos - startPos);
 }
 
-float Ray::WillIntersectPlane(Plane plane) {
+//Returns distance between ray and plane
+float Ray::PlaneIntersectionDistance(Plane plane) {
 	float distance;
 
 	glm::vec3 rayToPlane = plane.basePoint - this->startPos;
@@ -28,8 +29,9 @@ float Ray::WillIntersectPlane(Plane plane) {
 	return distance;
 }
 
+//Returns point where ray intersects provided plane
 glm::vec3 Ray::PlaneIntersectionPoint(Plane plane) {
-	float distance = WillIntersectPlane(plane);
+	float distance = PlaneIntersectionDistance(plane);
 	assert(distance >= 0); //Throw error if ray won't intersect
 	
 	return this->startPos + this->direction * distance;

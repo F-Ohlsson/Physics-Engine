@@ -27,7 +27,7 @@ namespace Game {
 		Core::CVarCreate(Core::CVar_Float, "r_force_power", "100.f");
 		Core::CVarCreate(Core::CVar_Float, "r_object_mass", "5.f");
 		Core::CVarCreate(Core::CVar_String, "r_framerate", "0");
-		Core::CVarCreate(Core::CVar_Int, "r_rewind", "1");
+		Core::CVarCreate(Core::CVar_Int, "r_rewind", "0");
 
 
 		int width = 1000;
@@ -305,12 +305,13 @@ namespace Game {
 			if (!bPause) {
 
 				if (worldFrame == worldStates.size()) {
-					physWorld->Tick((float)deltaTime, *this->cam);
-
-
 					for (int i = 0; i < physWorld->physObjs.size(); i++) {
 						dirLight.ApplyLight(physWorld->physObjs[i]->graphN->shadR->shaderProgram);
 					}
+
+					physWorld->Tick((float)deltaTime, *this->cam);
+
+
 
 
 					Ray ray;
@@ -338,18 +339,6 @@ namespace Game {
 						}
 					}
 
-					//Draw XYZ axes if cvar checked
-					int drawAxes = Core::CVarReadInt(Core::CVarGet("r_draw_axes"));
-					if (drawAxes) {
-						Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(3, 0, 0), 1.0f, glm::vec4(1, 0, 0, 1), glm::vec4(1, 0, 0, 1), Debug::RenderMode::AlwaysOnTop);
-						Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 3, 0), 1.0f, glm::vec4(0, 1, 0, 1), glm::vec4(0, 1, 0, 1), Debug::RenderMode::AlwaysOnTop);
-						Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 0, 3), 1.0f, glm::vec4(0, 0, 1, 1), glm::vec4(0, 0, 1, 1), Debug::RenderMode::AlwaysOnTop);
-
-						Debug::DrawDebugText("X", glm::vec3(2, 0, 0), glm::vec4(1, 0, 0, 1));
-						Debug::DrawDebugText("Y", glm::vec3(0, 2, 0), glm::vec4(0, 1, 0, 1));
-						Debug::DrawDebugText("Z", glm::vec3(0, 0, 2), glm::vec4(0, 0, 1, 1));
-
-					}
 					int bRewind = Core::CVarReadInt(Core::CVarGet("r_rewind"));
 					if (bRewind) {
 						PhysicsWorld* newState = new PhysicsWorld(*physWorld);
@@ -378,6 +367,16 @@ namespace Game {
 				for (int i = 0; i < worldStates[worldFrame - 1]->physObjs.size(); i++) {
 					dirLight.ApplyLight(worldStates[worldFrame - 1]->physObjs[i]->graphN->shadR->shaderProgram);
 				}
+			}
+
+			//Draw axes if troggled in UI
+			if (Core::CVarReadInt(Core::CVarGet("r_draw_axes"))) {
+				Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(3, 0, 0), 1.0f, glm::vec4(1, 0, 0, 1), glm::vec4(1, 0, 0, 1), Debug::RenderMode::AlwaysOnTop);
+				Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 3, 0), 1.0f, glm::vec4(0, 1, 0, 1), glm::vec4(0, 1, 0, 1), Debug::RenderMode::AlwaysOnTop);
+				Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 0, 3), 1.0f, glm::vec4(0, 0, 1, 1), glm::vec4(0, 0, 1, 1), Debug::RenderMode::AlwaysOnTop);
+				Debug::DrawDebugText("X", glm::vec3(2, 0, 0), glm::vec4(1, 0, 0, 1));
+				Debug::DrawDebugText("Y", glm::vec3(0, 2, 0), glm::vec4(0, 1, 0, 1));
+				Debug::DrawDebugText("Z", glm::vec3(0, 0, 2), glm::vec4(0, 0, 1, 1));
 			}
 			this->appWindow->SwapBuffers();
 
@@ -495,6 +494,7 @@ namespace Game {
 			} //CAMERA CONTROLS
 
 			//Deltatime
+			//Clamp deltatime to prevent physics simulation to run haywire in case of low frame rate
 			auto currentTime = GetCurrentEpochTime();
 			deltaTime = (currentTime - startTime) * 0.000001;
 			
