@@ -26,12 +26,13 @@ void PhysicsObject::Draw(float deltaTime, Camera cam) {
 	this->graphN->Tick(deltaTime, cam, false);
 }
 
-//DO THINGS
+//Update physics object according to time since last update
 void PhysicsObject::Tick(float deltaTime, Camera cam, bool paused) {
 	//this->graphN->Tick(deltaTime, cam, paused);
 	this->physN->Tick(deltaTime, paused);
 }
 
+//Apply physics according to time since last update
 void PhysicsObject::TickPhysics(float deltaTime, bool paused) {
 	this->graphN->TickPhysics(deltaTime, paused);
 	this->physN->Tick(deltaTime, paused);

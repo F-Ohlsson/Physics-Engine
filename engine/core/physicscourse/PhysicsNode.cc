@@ -47,6 +47,7 @@ PhysicsNode::~PhysicsNode() {
 	this->parent = nullptr;
 }
 
+//Set inertia tensor based on formula for moments of inertia based on collider shape
 void PhysicsNode::SetInertiaTensor(tensorTypes tensor) {
 	this->tensorType = tensor;
 	if (tensor == e_cuboid) {
@@ -109,6 +110,7 @@ void PhysicsNode::SetInertiaTensor(tensorTypes tensor) {
 
 }
 
+//Create AABB based on collider size
 void PhysicsNode::SetAABB() {
 	glm::vec3 tempAABBmin = glm::vec3(std::numeric_limits<float>::max() + 1, std::numeric_limits<float>::max() + 1, std::numeric_limits<float>::max() + 1);
 	glm::vec3 tempAABBmax = glm::vec3(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
@@ -236,7 +238,6 @@ void PhysicsNode::Tick(float deltaTime, bool paused) {
 		//Debug::DrawLine(this->AABBposition, this->AABBposition + this->linearVelocity, 1.0f, glm::vec4(1, 0, 0, 1), glm::vec4(0, 1, 0, 1), Debug::RenderMode::AlwaysOnTop); //Linear velocity
 		//Debug::DrawLine(this->AABBposition, this->AABBposition + this->angularVelocity, 1.0f, glm::vec4(1, 0, 1, 1), glm::vec4(0, 1, 1, 1), Debug::RenderMode::AlwaysOnTop); //Angular velocity
 
-		//std::cout << this->colliderTriangles.size() << std::endl;
 		this->linearAcceleration += this->force * invMass;
 		this->linearVelocity += this->linearAcceleration * deltaTime;
 		this->AABBposition += (this->linearVelocity);
@@ -247,7 +248,7 @@ void PhysicsNode::Tick(float deltaTime, bool paused) {
 		if(angularPhysics)
 			this->Rotate(deltaTime);
 
-
+		//Zero force and torque as well as linear and angular acceleration as their addition should only act as an impulse
 		this->force = glm::vec3(0, 0, 0);
 		this->torque = glm::vec3(0, 0, 0);
 
@@ -369,7 +370,7 @@ void PhysicsNode::CalcWorldAllignedInvertedInertiaTensor(glm::mat4 rotMat) {
 
 	////Own solution (with help from ChatGPT)
 	////Gives good results, very comparable to the solution from the book
-	////However, I can't vouch for it's complete accuracy which is why I'm leaving commented out of the final results
+	////However, I can't vouch for its complete accuracy which is why I'm leaving it commented out of the final results
 	//glm::mat3 rot3 = glm::mat3(rotMat);
 
 	//glm::mat3 transpRot3 = glm::transpose(rot3);
@@ -450,7 +451,7 @@ void PhysicsNode::LoadColliderGLTF(std::string filename) {
 				}
 
 
-				//HEAVILY inspired by Physics.cc
+				//HEAVILY inspired by physics implementation by Fredrik Lindahl at LTU
 				if (accessorString == "POSITION") {
 					auto indexBufferAccessor = doc.accessors[currentPrim.indices];
 					auto indexViewBuffer = doc.bufferViews[indexBufferAccessor.bufferView];
@@ -518,10 +519,6 @@ void PhysicsNode::Damping(float deltaTime) {
 		//Set to 0 if too small
 		this->linearVelocity *= glm::length(this->linearVelocity) > 0.00005f ? 0.999 : 0;
 		this->angularVelocity *= glm::length(this->angularVelocity) > 0.00005f ? 0.999 : 0;
-
-		//this->linearVelocity *= 0.999;
-		//this->angularVelocity *= 0.995;
-
 
 	}
 

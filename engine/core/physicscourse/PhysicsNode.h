@@ -24,8 +24,6 @@ struct triangle {
 	}
 };
 
-
-
 class PhysicsNode {
 public:
 	PhysicsNode();
@@ -36,15 +34,14 @@ public:
 
 	float invMass = 0.f;
 	float mass = 0.f;
-	//bool isStatic = true;
 	float elasticity = 0.f;
 
 
-	//AABB
+	//Axis Alligned Bounding Box
 	glm::vec3 AABBmin = glm::vec3(0);
 	glm::vec3 AABBmax = glm::vec3(0);
 	glm::vec3 AABBscale = glm::vec3(0);
-	glm::vec3 AABBposition = glm::vec3(0); //Also works as centre of mass
+	glm::vec3 AABBposition = glm::vec3(0);
 	glm::vec4 AABBcolor = glm::vec4(1);
 	float AABBlineWeight = 1.f;
 	triangle AABB[12];

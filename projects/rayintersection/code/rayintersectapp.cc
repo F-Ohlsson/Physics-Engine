@@ -191,6 +191,7 @@ void RayIntersectApp::Run() {
 			float closestDistance = std::numeric_limits<float>::max();
 			for (int i = 0; i < gameObjects.size(); i++) {
 				float intersectionDistance = picker->IntersectsWithPhysicsObject(ray, gameObjects[i], cam->view);
+				//In the case of multiple intersections, only save the one with the shortest distance to the ray origin
 				if (intersectionDistance >= 0 && intersectionDistance < closestDistance) {
 					closestDistance = intersectionDistance;
 					collidedObject = gameObjects[i];

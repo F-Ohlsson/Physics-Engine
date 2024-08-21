@@ -66,7 +66,7 @@ Ray Picker::ShootRay(Display::Window* renderWindow, Camera* cam) {
 	return ray;
 }
 
-//Checks if any object intersects with the ray provided
+//Checks if provided object intersects with the ray provided
 float Picker::IntersectsWithPhysicsObject(Ray ray, PhysicsObject* gameObj, glm::mat4 viewMatrix) {
 	for (int i = 0; i < ignoreObjects.size(); i++) {
 		if (ignoreObjects[i] == gameObj) {
@@ -181,32 +181,11 @@ std::tuple<double, double> Picker::GetCursorPosNDC(Display::Window* renderWindow
 	return std::make_tuple(xPosNDC, yPosNDC);
 }
 
-std::tuple<glm::vec3, glm::vec3> Picker::UpdateAABB(triangle triangle, glm::vec3 minAABB, glm::vec3 maxAABB) {
-	glm::vec3 newMin = minAABB;
-	glm::vec3 newMax = maxAABB;
-
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			newMin.x = std::min(triangle.vertexPos[j].x, newMin.x);
-			newMin.y = std::min(triangle.vertexPos[j].y, newMin.y);
-			newMin.z = std::min(triangle.vertexPos[j].z, newMin.z);
-
-			newMax.x = std::max(triangle.vertexPos[j].x, newMax.x);
-			newMax.y = std::max(triangle.vertexPos[j].y, newMax.y);
-			newMax.z = std::max(triangle.vertexPos[j].z, newMax.z);
-		}
-	}
-
-	return std::make_tuple(newMin, newMax);
-}
-
-
-//READ UP AND UNDERSTAND BETTER
+//Determine whether a point falls inside the area of a triangle
 bool Picker::PointInsideTriangle(triangle triangle, glm::vec3 planePoint) {
 
 
-	//Calculate the stuff here
-	//USE BARYCENTRIC COORDINATES
+	//Calculate barycentric coordinates
 
 	glm::vec3 triA = triangle.vertexPos[0];
 	glm::vec3 triB = triangle.vertexPos[1];
@@ -215,6 +194,7 @@ bool Picker::PointInsideTriangle(triangle triangle, glm::vec3 planePoint) {
 	glm::vec3 triAB = triB - triA;
 	glm::vec3 triAC = triC - triA;
 
+	//Not in use
 	if (false) {
 		//Heavily inspired by code found in Real-Time Collision Detection (Christer Ericson)
 		glm::vec3 vecAP = planePoint - triA;
@@ -246,8 +226,6 @@ bool Picker::PointInsideTriangle(triangle triangle, glm::vec3 planePoint) {
 
 
 	if (true) {
-		bool success = true;
-		//Based on
 		glm::vec3 triangleNormal = glm::cross(triAB, triAC);
 		float triangleArea = glm::length(triangleNormal) / 2;
 
@@ -258,7 +236,7 @@ bool Picker::PointInsideTriangle(triangle triangle, glm::vec3 planePoint) {
 		C = glm::cross(triAB, vecPA);
 		float w = (glm::length(C) / 2) / triangleArea;
 		if (glm::dot(triangleNormal, C) < 0) {
-			success = false;
+			return false;
 		}
 
 		//calculate u
@@ -267,7 +245,7 @@ bool Picker::PointInsideTriangle(triangle triangle, glm::vec3 planePoint) {
 		C = glm::cross(triBC, vecPB);
 		float u = (glm::length(C) / 2) / triangleArea;
 		if (glm::dot(triangleNormal, C) < 0) {
-			success = false;
+			return false;
 		}
 
 		//calculate v
@@ -276,15 +254,7 @@ bool Picker::PointInsideTriangle(triangle triangle, glm::vec3 planePoint) {
 		C = glm::cross(triCA, vecPC);
 		float v = (glm::length(C) / 2) / triangleArea;
 		if (glm::dot(triangleNormal, C) < 0) {
-			success = false;
-		}
-
-		if (!success) {
-			//Debug::DrawLine(triangle.vertexPos[0].ToGlmVec3(), planePoint.ToGlmVec3(), 1, glm::vec4(1, 0, 0, 1), glm::vec4(1, 0, 0, 1), Debug::RenderMode::AlwaysOnTop);
 			return false;
-		}
-		else {
-			int i = 0;
 		}
 	}
 

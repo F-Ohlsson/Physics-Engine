@@ -29,6 +29,5 @@ private:
 	std::tuple<double, double> GetCursorPos(GLFWwindow* glfwWindow);
 	std::tuple<double, double> GetCursorPosPercent(Display::Window* renderWindow);
 	std::tuple<double, double> GetCursorPosNDC(Display::Window* renderWindow);
-	std::tuple<glm::vec3, glm::vec3> UpdateAABB(triangle triangle, glm::vec3 minAABB, glm::vec3 maxAABB);
 	bool PointInsideTriangle(triangle triangle, glm::vec3 planePoint);
 };

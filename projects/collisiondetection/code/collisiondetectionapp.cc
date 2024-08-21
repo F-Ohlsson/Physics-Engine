@@ -235,12 +235,6 @@ namespace Game {
 		double deltaTime = upperClamp;
 		auto startTime = GetCurrentEpochTime();
 
-		//Force stuff
-		glm::vec3 intersection = glm::vec3(0, 0, 0);
-		float intersectionBoxScale = 0.5;
-		float invIntersectionBoxScale = 1 / 0.5;
-
-
 		uint worldCounter = 0;
 
 		while (this->appWindow->IsOpen()) {
@@ -248,7 +242,6 @@ namespace Game {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-			//cam->position = { (sin(horCounter / 10) * 5), verCounter , (-cos(horCounter / 10) * 5) };
 			this->cam->view = glm::inverse(this->cam->ViewMatrix(lookPoint));
 
 			this->appWindow->Update();
@@ -274,6 +267,7 @@ namespace Game {
 						float closestDistance = std::numeric_limits<float>::max();
 						for (int i = 0; i < physWorld->physObjs.size(); i++) {
 							intersectionDistance = picker->IntersectsWithPhysicsObject(ray, physWorld->physObjs[i], cam->view);
+							//In the case of multiple intersections, only save the one with the shortest distance to the ray origin
 							if (intersectionDistance >= 0 && intersectionDistance < closestDistance) {
 								closestDistance = intersectionDistance;
 								collidedObject = physWorld->physObjs[i];
@@ -284,7 +278,6 @@ namespace Game {
 						if (collidedObject != nullptr) {
 							picker->AddHighlight(collidedObject->graphN);
 							glm::vec3 intersectionPoint = ray.startPos + ray.direction * closestDistance;
-							intersection = intersectionPoint;
 							float forceSize = Core::CVarReadFloat(Core::CVarGet("r_force_power"));
 							physWorld->forceApplier->ApplyForce(collidedObject, intersectionPoint, ray.direction * forceSize);
 						}
@@ -296,8 +289,8 @@ namespace Game {
 					worldStates.push_back(newState);
 					Core::CVarWriteInt(Core::CVarGet("r_world_frame"), worldStates.size());
 				}
+				//If resuming from rewind, delete all worldstates past the state selected
 				else {
-
 					physWorld = worldStates[worldFrame - 1];
 
 					for (int i = worldStates.size() - 1; i > worldFrame; i--) {
