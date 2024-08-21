@@ -1,10 +1,9 @@
-# S0012E Engine
+# Pyshics Engine
 
-A lightweight engine for assignments in S0012E.
-Check out the projects folder!
+A physics engine developed as an ongoing assignment for a course during my education at LTU.
+The basic app framework was created by the programme coordinator Fredrik Lindahl but all code inside the projects folder is of my own making.
 
-This engine is a work in progress, and things might not work as intended. Bugs and/or instabilities are to be expected.
-Pull requests are welcome!
+The visual studio solution is generated using CMake
 
 ## Requirements
 
